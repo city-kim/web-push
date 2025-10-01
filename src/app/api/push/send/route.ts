@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import webpush from 'web-push'
+
 import { prisma } from '@/lib/prisma'
 
 // VAPID 키 설정 (실제 프로덕션에서는 환경변수로 관리해야 합니다)
@@ -41,9 +42,9 @@ export async function POST(request: NextRequest) {
       try {
         const subscriptionData = {
           endpoint: subscription.endpoint,
-          keys: subscription.keys as any,
+          keys: subscription.keys as { p256dh: string; auth: string },
         }
-        
+
         await webpush.sendNotification(subscriptionData, payload)
         results.push({
           endpoint: subscription.endpoint.substring(0, 50) + '...',
