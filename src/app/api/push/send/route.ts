@@ -16,14 +16,8 @@ webpush.setVapidDetails(
   vapidKeys.privateKey,
 )
 
-export async function POST(request: NextRequest) {
-  if (request.headers.get('x-api-key') !== process.env.API_KEY) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
+export async function POST() {
   try {
-    const { body } = await request.json()
-
     const results = []
 
     // DB에서 모든 구독자 조회
@@ -37,7 +31,7 @@ export async function POST(request: NextRequest) {
           keys: subscription.keys as { p256dh: string; auth: string },
         }
 
-        await webpush.sendNotification(subscriptionData, body || '')
+        await webpush.sendNotification(subscriptionData, '근태관리할시간')
         results.push({
           endpoint: subscription.endpoint.substring(0, 50) + '...',
           status: 'success',

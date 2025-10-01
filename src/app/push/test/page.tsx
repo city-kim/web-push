@@ -31,13 +31,29 @@ export default function PushTestPage() {
     }
   }
 
-  return process.env.NODE_ENV === 'development' ? (
+  return (
     <div className="min-h-screen bg-gray-100 py-12">
       <div className="max-w-2xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
             웹푸쉬 알림 테스트
           </h1>
+
+          <button
+            type="button"
+            onClick={() => {
+              fetch('/api/push/send', {
+                method: 'POST',
+                headers: {
+                  'x-api-key':
+                    '3c2a69369ec93fe57f68aeb8a5a848c18e621a10e2284082af163d8711350c8a',
+                },
+                body: JSON.stringify({ body }),
+              })
+            }}
+          >
+            api 호출
+          </button>
 
           <div className="space-y-6">
             {/* 알림 설정 폼 */}
@@ -160,7 +176,5 @@ export default function PushTestPage() {
         </div>
       </div>
     </div>
-  ) : (
-    <div>development 환경이 아닙니다.</div>
   )
 }
