@@ -31,7 +31,7 @@ export default function PushTestPage() {
     }
   }
 
-  return (
+  return process.env.NODE_ENV === 'development' ? (
     <div className="min-h-screen bg-gray-100 py-12">
       <div className="max-w-2xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-8">
@@ -176,5 +176,7 @@ export default function PushTestPage() {
         </div>
       </div>
     </div>
+  ) : (
+    <div>development 환경이 아닙니다.</div>
   )
 }
