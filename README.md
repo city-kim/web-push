@@ -16,7 +16,15 @@
 `.env` 파일을 생성하고 다음 변수들을 설정하세요:
 
 ```env
+# Database URLs (Vercel Postgres)
+DATABASE_URL=your_database_url
+```
+
+`.env.local`을 생성하고 다음 변수들을 설정하세요:
+
+```.env.local
 # VAPID Keys for Web Push
+DATABASE_URL=your_database_url
 VAPID_PUBLIC_KEY=your_vapid_public_key
 VAPID_PRIVATE_KEY=your_vapid_private_key
 

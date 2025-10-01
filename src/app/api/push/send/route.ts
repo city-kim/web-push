@@ -17,20 +17,12 @@ webpush.setVapidDetails(
 )
 
 export async function POST(request: NextRequest) {
+  if (request.headers.get('x-api-key') !== process.env.API_KEY) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
-    const { title, body, icon, url } = await request.json()
-
-    if (!title) {
-      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
-    }
-
-    const payload = JSON.stringify({
-      title: title || '웹푸쉬 알림',
-      body: body || '새로운 알림이 있습니다!',
-      icon: icon || '/icon-192x192.png',
-      url: url || '/',
-      timestamp: new Date().toISOString(),
-    })
+    const { body } = await request.json()
 
     const results = []
 
@@ -45,7 +37,7 @@ export async function POST(request: NextRequest) {
           keys: subscription.keys as { p256dh: string; auth: string },
         }
 
-        await webpush.sendNotification(subscriptionData, payload)
+        await webpush.sendNotification(subscriptionData, body || '')
         results.push({
           endpoint: subscription.endpoint.substring(0, 50) + '...',
           status: 'success',
@@ -78,32 +70,6 @@ export async function POST(request: NextRequest) {
     console.error('Error sending push notifications:', error)
     return NextResponse.json(
       { error: 'Failed to send push notifications' },
-      { status: 500 },
-    )
-  }
-}
-
-// 구독자 수 조회
-export async function GET() {
-  try {
-    const subscriptions = await prisma.pushSubscription.findMany({
-      select: {
-        endpoint: true,
-        keys: true,
-      },
-    })
-
-    return NextResponse.json({
-      totalSubscribers: subscriptions.length,
-      subscriptions: subscriptions.map((sub) => ({
-        endpoint: sub.endpoint.substring(0, 50) + '...',
-        keys: sub.keys ? 'present' : 'missing',
-      })),
-    })
-  } catch (error) {
-    console.error('Error getting subscribers:', error)
-    return NextResponse.json(
-      { error: 'Failed to get subscribers' },
       { status: 500 },
     )
   }

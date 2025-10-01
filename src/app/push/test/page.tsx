@@ -2,42 +2,23 @@
 
 import { useState } from 'react'
 
+import { sendPushNotification } from '@/lib/actions/push'
+
 export default function PushTestPage() {
-  const [title, setTitle] = useState('테스트 알림')
   const [body, setBody] = useState('이것은 테스트 웹푸쉬 알림입니다!')
-  const [icon, setIcon] = useState('/icon-192x192.png')
-  const [url, setUrl] = useState('/')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState('')
 
-  const sendPushNotification = async () => {
-    if (!title.trim()) {
-      setError('제목을 입력해주세요.')
-      return
-    }
-
+  async function handleSendPushNotification() {
     setLoading(true)
     setError('')
     setResult(null)
 
     try {
-      const response = await fetch('/api/push/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: title.trim(),
-          body: body.trim(),
-          icon: icon.trim(),
-          url: url.trim(),
-        }),
-      })
+      const data = await sendPushNotification(body.trim())
 
-      const data = await response.json()
-
-      if (response.ok) {
+      if (data.success) {
         setResult(data)
       } else {
         setError(data.error || '푸쉬 알림 발송에 실패했습니다.')
@@ -50,18 +31,7 @@ export default function PushTestPage() {
     }
   }
 
-  const getSubscriberCount = async () => {
-    try {
-      const response = await fetch('/api/push/send')
-      const data = await response.json()
-      return data.totalSubscribers
-    } catch (error) {
-      console.error('Error getting subscriber count:', error)
-      return 0
-    }
-  }
-
-  return (
+  return process.env.NODE_ENV === 'development' ? (
     <div className="min-h-screen bg-gray-100 py-12">
       <div className="max-w-2xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-8">
@@ -72,23 +42,6 @@ export default function PushTestPage() {
           <div className="space-y-6">
             {/* 알림 설정 폼 */}
             <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="title"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  제목 *
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="알림 제목을 입력하세요"
-                />
-              </div>
-
               <div>
                 <label
                   htmlFor="body"
@@ -105,46 +58,12 @@ export default function PushTestPage() {
                   placeholder="알림 내용을 입력하세요"
                 />
               </div>
-
-              <div>
-                <label
-                  htmlFor="icon"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  아이콘 URL
-                </label>
-                <input
-                  type="text"
-                  id="icon"
-                  value={icon}
-                  onChange={(e) => setIcon(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="아이콘 이미지 URL"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="url"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  클릭 시 이동할 URL
-                </label>
-                <input
-                  type="text"
-                  id="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="클릭 시 이동할 페이지 URL"
-                />
-              </div>
             </div>
 
             {/* 발송 버튼 */}
             <div className="text-center">
               <button
-                onClick={sendPushNotification}
+                onClick={handleSendPushNotification}
                 disabled={loading}
                 className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-lg transition-colors"
               >
@@ -241,5 +160,7 @@ export default function PushTestPage() {
         </div>
       </div>
     </div>
+  ) : (
+    <div>development 환경이 아닙니다.</div>
   )
 }

@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from 'react'
 
+import {
+  getSubscriptionCount,
+  registerPushSubscription,
+  unregisterPushSubscription,
+} from '@/lib/actions/push'
+
 export default function PushPage() {
   const [isSupported, setIsSupported] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(false)
@@ -23,9 +29,10 @@ export default function PushPage() {
 
   const getPublicKey = async () => {
     try {
-      const response = await fetch('/api/push/register')
-      const data = await response.json()
-      setPublicKey(data.publicKey)
+      const result = await getSubscriptionCount()
+      if (result.publicKey) {
+        setPublicKey(result.publicKey)
+      }
     } catch (error) {
       console.error('Error getting public key:', error)
     }
@@ -63,20 +70,23 @@ export default function PushPage() {
       })
 
       // 서버에 구독 정보 전송
-      const response = await fetch('/api/push/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const result = await registerPushSubscription(
+        {
+          endpoint: sub.endpoint,
+          keys: {
+            p256dh: sub.getKey('p256dh'),
+            auth: sub.getKey('auth'),
+          },
         },
-        body: JSON.stringify({ subscription: sub }),
-      })
+        navigator.userAgent,
+      )
 
-      if (response.ok) {
+      if (result.success) {
         setSubscription(sub)
         setIsSubscribed(true)
         setMessage('웹푸쉬 구독이 성공적으로 등록되었습니다!')
       } else {
-        throw new Error('Failed to register subscription')
+        throw new Error(result.error || 'Failed to register subscription')
       }
     } catch (error) {
       console.error('Error subscribing to push:', error)
@@ -97,20 +107,14 @@ export default function PushPage() {
       await subscription.unsubscribe()
 
       // 서버에서 구독 정보 제거
-      const response = await fetch('/api/push/register', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ endpoint: subscription.endpoint }),
-      })
+      const result = await unregisterPushSubscription(subscription.endpoint)
 
-      if (response.ok) {
+      if (result.success) {
         setSubscription(null)
         setIsSubscribed(false)
         setMessage('웹푸쉬 구독이 해제되었습니다.')
       } else {
-        throw new Error('Failed to unregister subscription')
+        throw new Error(result.error || 'Failed to unregister subscription')
       }
     } catch (error) {
       console.error('Error unsubscribing from push:', error)
