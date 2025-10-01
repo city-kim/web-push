@@ -3,20 +3,29 @@
 import { useEffect, useState } from 'react'
 
 import {
+  getSubscribers,
   getSubscriptionCount,
   registerPushSubscription,
   unregisterPushSubscription,
 } from '@/lib/actions/push'
 
 export default function PushPage() {
+  // 브라우저 지원 확인
   const [isSupported, setIsSupported] = useState(false)
+  // 구독 상태
   const [isSubscribed, setIsSubscribed] = useState(false)
+  // 구독 정보
   const [subscription, setSubscription] = useState<PushSubscription | null>(
     null,
   )
+  // 공개키
   const [publicKey, setPublicKey] = useState<string>('')
+  // 로딩 상태
   const [loading, setLoading] = useState(false)
+  // 메시지
   const [message, setMessage] = useState('')
+  // 구독자 수
+  const [count, setCount] = useState(0)
 
   useEffect(() => {
     // 브라우저 지원 확인
@@ -24,10 +33,14 @@ export default function PushPage() {
       setIsSupported(true)
       checkSubscription()
       getPublicKey()
+      getSubscribers().then((result) => {
+        setCount(result.totalSubscribers)
+      })
     }
   }, [])
 
   const getPublicKey = async () => {
+    // 공개키 조회
     try {
       const result = await getSubscriptionCount()
       if (result.publicKey) {
@@ -39,6 +52,7 @@ export default function PushPage() {
   }
 
   const checkSubscription = async () => {
+    // 구독 상태 확인
     try {
       const registration = await navigator.serviceWorker.ready
       const sub = await registration.pushManager.getSubscription()
@@ -50,6 +64,7 @@ export default function PushPage() {
   }
 
   const subscribeToPush = async () => {
+    // 구독 등록
     if (!isSupported) {
       setMessage('이 브라우저는 웹푸쉬를 지원하지 않습니다.')
       return
@@ -165,6 +180,8 @@ export default function PushPage() {
             웹푸쉬 관리
           </h1>
 
+          <h2>구독자 숫자: {count}</h2>
+
           <div className="space-y-6">
             {/* 현재 상태 */}
             <div className="bg-gray-50 p-4 rounded-lg">
@@ -211,25 +228,6 @@ export default function PushPage() {
               </div>
             )}
 
-            {/* 구독 정보 */}
-            {subscription && (
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  구독 정보
-                </h3>
-                <div className="text-sm text-gray-600 space-y-1">
-                  <p>
-                    <strong>Endpoint:</strong>{' '}
-                    {subscription.endpoint.substring(0, 50)}...
-                  </p>
-                  <p>
-                    <strong>Keys:</strong>{' '}
-                    {subscription.getKey('p256dh') ? 'Present' : 'Missing'}
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* 안내사항 */}
             <div className="bg-blue-50 p-4 rounded-lg">
               <h3 className="text-lg font-semibold text-blue-700 mb-2">
@@ -243,14 +241,16 @@ export default function PushPage() {
             </div>
 
             {/* 테스트 페이지 링크 */}
-            <div className="text-center">
-              <a
-                href="/push/test"
-                className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
-              >
-                푸쉬 알림 테스트 페이지로 이동
-              </a>
-            </div>
+            {process.env.NODE_ENV === 'development' ? (
+              <div className="text-center">
+                <a
+                  href="/push/test"
+                  className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                >
+                  푸쉬 알림 테스트 페이지로 이동
+                </a>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
