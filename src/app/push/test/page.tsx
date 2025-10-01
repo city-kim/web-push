@@ -39,22 +39,6 @@ export default function PushTestPage() {
             웹푸쉬 알림 테스트
           </h1>
 
-          <button
-            type="button"
-            onClick={() => {
-              fetch('/api/push/send', {
-                method: 'POST',
-                headers: {
-                  'x-api-key':
-                    '3c2a69369ec93fe57f68aeb8a5a848c18e621a10e2284082af163d8711350c8a',
-                },
-                body: JSON.stringify({ body }),
-              })
-            }}
-          >
-            api 호출
-          </button>
-
           <div className="space-y-6">
             {/* 알림 설정 폼 */}
             <div className="space-y-4">
@@ -84,6 +68,21 @@ export default function PushTestPage() {
                 className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-lg transition-colors"
               >
                 {loading ? '발송 중...' : '푸쉬 알림 발송'}
+              </button>
+            </div>
+
+            <div className="text-center">
+              <button
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-lg transition-colors"
+                type="button"
+                onClick={() => {
+                  fetch('/api/push/send', {
+                    method: 'POST',
+                    body: JSON.stringify({ body }),
+                  })
+                }}
+              >
+                api 호출
               </button>
             </div>
 
