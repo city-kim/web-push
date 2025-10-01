@@ -1,9 +1,9 @@
 import { schedules } from '@trigger.dev/sdk/v3'
 
 export const firstScheduledTask = schedules.task({
-  id: 'next-scheduled-task',
+  id: 'pm-scheduled-task',
   cron: {
-    pattern: '50 9 * * *',
+    pattern: '00 19 * * *',
     timezone: 'Asia/Seoul',
   },
   maxDuration: 300,
