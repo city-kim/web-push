@@ -1,5 +1,7 @@
 # Web Push Notification with Database
 
+voyager games 재직중에 flex 앱의 알람이 종종 오지않아서 자체 웹푸시 구현한 프로젝트 입낟.
+
 웹푸시 알림을 데이터베이스와 함께 사용하는 Next.js 애플리케이션입니다.
 
 ## 기능
